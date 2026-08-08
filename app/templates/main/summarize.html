@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}Tóm tắt văn bản{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- INPUT PANEL -->
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between">
+        <h6 class="fw-bold mb-0"><i class="bi bi-pencil-square me-2 text-primary"></i>Văn bản gốc</h6>
+        <div class="d-flex gap-2">
+          <label for="fileUpload" class="btn btn-sm btn-outline-secondary" title="Upload file .txt">
+            <i class="bi bi-upload me-1"></i>Upload .txt
+          </label>
+          <input type="file" id="fileUpload" accept=".txt" class="d-none">
+          <button class="btn btn-sm btn-outline-danger" onclick="clearInput()" title="Xóa">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+      <div class="card-body p-3">
+        <textarea id="inputText" class="form-control border-0 resize-none"
+                  style="height:340px;font-size:0.92rem"
+                  placeholder="Dán hoặc nhập văn bản tiếng Việt vào đây…&#10;&#10;Tối thiểu 100 ký tự để bắt đầu tóm tắt."></textarea>
+        <div class="d-flex justify-content-between mt-2">
+          <small class="text-muted" id="charCount">0 ký tự</small>
+          <small id="uploadFilename" class="text-success"></small>
+        </div>
+      </div>
+
+      <!-- CONTROLS -->
+      <div class="card-footer bg-white border-top pt-3 pb-3">
+        <div class="row g-3 mb-3">
+          <div class="col-7">
+            <label class="form-label fw-semibold small mb-1">Phương pháp tóm tắt</label>
+            <select id="methodSelect" class="form-select form-select-sm">
+              <option value="textrank" selected>TextRank (mạch lạc, xét quan hệ giữa các câu)</option>
+              <option value="tfidf">TF-IDF (nhanh, chấm điểm từng câu độc lập)</option>
+            </select>
+          </div>
+          <div class="col-5">
+            <label class="form-label fw-semibold small mb-1">
+              <input type="checkbox" id="useMmr" class="form-check-input me-1" checked>
+              Giảm trùng lặp câu
+            </label>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold small mb-1">
+            Tỷ lệ tóm tắt:
+            <span id="ratioDisplay" class="text-primary fw-bold">30%</span>
+          </label>
+          <input type="range" class="form-range" id="ratioSlider"
+                 min="10" max="50" step="5" value="30"
+                 oninput="document.getElementById('ratioDisplay').textContent=this.value+'%'">
+          <div class="d-flex justify-content-between">
+            <small class="text-muted">10% (ngắn nhất)</small>
+            <small class="text-muted">50% (đầy đủ hơn)</small>
+          </div>
+        </div>
+        <button id="btnSummarize" class="btn btn-primary w-100 py-2" onclick="doSummarize()">
+          <i class="bi bi-magic me-2"></i>Tóm tắt ngay
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OUTPUT PANEL -->
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between">
+        <h6 class="fw-bold mb-0"><i class="bi bi-file-check me-2 text-success"></i>Kết quả tóm tắt</h6>
+        <div class="d-flex gap-2" id="resultActions" style="display:none!important">
+          <button class="btn btn-sm btn-outline-success" onclick="copyResult()" title="Sao chép">
+            <i class="bi bi-clipboard me-1"></i>Sao chép
+          </button>
+          <button class="btn btn-sm btn-outline-primary" onclick="downloadResult()" title="Tải xuống">
+            <i class="bi bi-download me-1"></i>Tải về
+          </button>
+        </div>
+      </div>
+      <div class="card-body p-3">
+        <!-- Placeholder -->
+        <div id="placeholder" class="text-center text-muted py-5">
+          <i class="bi bi-arrow-left-circle" style="font-size:2.5rem;opacity:.3"></i>
+          <p class="mt-3">Kết quả sẽ hiển thị ở đây sau khi bạn nhấn "Tóm tắt".</p>
+        </div>
+
+        <!-- Loading -->
+        <div id="loadingState" class="text-center py-5 d-none">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="mt-3 text-muted">Đang xử lý văn bản…</p>
+        </div>
+
+        <!-- Result -->
+        <div id="resultContainer" class="d-none">
+          <!-- Stats bar -->
+          <div id="statsBar" class="row g-2 mb-3"></div>
+          <!-- Keywords -->
+          <div id="keywordsBar" class="mb-3 d-none">
+            <small class="text-muted d-block mb-1">Từ khóa chính:</small>
+            <div id="keywordsList" class="d-flex flex-wrap gap-1"></div>
+          </div>
+          <!-- Summary text -->
+          <div id="summaryText" class="summary-output p-3 rounded"
+               style="height:230px;overflow-y:auto;font-size:0.92rem;line-height:1.8"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/summarize.js') }}"></script>
+{% endblock %}

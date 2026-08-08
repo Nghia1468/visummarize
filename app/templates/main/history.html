@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}Lịch sử tóm tắt{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Lịch sử tóm tắt</h4>
+  <span class="badge bg-secondary ms-2">{{ pagination.total }}</span>
+</div>
+
+{% if summaries %}
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">#</th>
+            <th>Văn bản gốc</th>
+            <th>Bản tóm tắt</th>
+            <th>Tỷ lệ</th>
+            <th>Nén</th>
+            <th>Thời gian</th>
+            <th class="text-end pe-3">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody id="historyTable">
+          {% for s in summaries %}
+          <tr id="row-{{ s.id }}">
+            <td class="ps-3 text-muted small">{{ loop.index }}</td>
+            <td style="max-width:200px">
+              <span class="text-truncate d-block" title="{{ s.original_text[:200] }}">
+                {{ s.original_text[:80] }}…
+              </span>
+              <small class="text-muted">{{ s.original_length }} ký tự</small>
+            </td>
+            <td style="max-width:200px">
+              <span class="text-truncate d-block text-muted" title="{{ s.summary_text[:200] }}">
+                {{ s.summary_text[:80] }}…
+              </span>
+              <small class="text-muted">{{ s.summary_length }} ký tự</small>
+            </td>
+            <td><span class="badge bg-primary-subtle text-primary">{{ (s.ratio*100)|int }}%</span></td>
+            <td>
+              <span class="badge bg-success-subtle text-success">
+                -{{ ((1 - s.summary_length/s.original_length)*100)|round(0)|int }}%
+              </span>
+            </td>
+            <td class="small text-muted">{{ s.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td class="text-end pe-3">
+              <button class="btn btn-sm btn-outline-primary me-1"
+                      onclick="viewDetail({{ s.id }})" title="Xem chi tiết">
+                <i class="bi bi-eye"></i>
+              </button>
+              <a class="btn btn-sm btn-outline-success me-1"
+                 href="/api/history/download/{{ s.id }}" title="Tải xuống">
+                <i class="bi bi-download"></i>
+              </a>
+              <button class="btn btn-sm btn-outline-danger"
+                      onclick="deleteRecord({{ s.id }})" title="Xóa">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% if pagination.pages > 1 %}
+<nav class="d-flex justify-content-center mt-4">
+  <ul class="pagination">
+    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('history.history_page', page=pagination.prev_num) if pagination.has_prev else '#' }}">Trước</a>
+    </li>
+    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+      {% if p %}
+        <li class="page-item {% if p == pagination.page %}active{% endif %}">
+          <a class="page-link" href="{{ url_for('history.history_page', page=p) }}">{{ p }}</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %}
+    {% endfor %}
+    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('history.history_page', page=pagination.next_num) if pagination.has_next else '#' }}">Sau</a>
+    </li>
+  </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="text-center py-5 text-muted">
+  <i class="bi bi-inbox" style="font-size:3rem;opacity:.3"></i>
+  <p class="mt-3">Chưa có lịch sử nào.</p>
+  <a href="{{ url_for('summarize.summarize_page') }}" class="btn btn-primary">
+    <i class="bi bi-magic me-2"></i>Tóm tắt ngay
+  </a>
+</div>
+{% endif %}
+
+<!-- MODAL chi tiết -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">Chi tiết tóm tắt</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="modalStats" class="row g-3 mb-4"></div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <h6 class="fw-bold text-muted mb-2">VĂN BẢN GỐC</h6>
+            <div id="modalOriginal" class="border rounded p-3 bg-light"
+                 style="height:350px;overflow-y:auto;font-size:0.9rem;line-height:1.8;white-space:pre-wrap"></div>
+          </div>
+          <div class="col-md-6">
+            <h6 class="fw-bold text-muted mb-2">BẢN TÓM TẮT</h6>
+            <div id="modalSummary" class="border rounded p-3 summary-output"
+                 style="height:350px;overflow-y:auto;font-size:0.9rem;line-height:1.8;white-space:pre-wrap"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-success" onclick="copyModal()">
+          <i class="bi bi-clipboard me-1"></i>Sao chép tóm tắt
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/history.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Trang chủ{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<div class="hero-section text-center py-5 mb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="hero-icon mb-4">
+        <i class="bi bi-file-text-fill" style="font-size:4rem;color:var(--primary)"></i>
+      </div>
+      <h1 class="display-5 fw-bold mb-3">Tóm tắt văn bản tiếng Việt <br>bằng trí tuệ nhân tạo</h1>
+      <p class="lead text-muted mb-4">
+        Dán hoặc tải lên văn bản dài — hệ thống sẽ tự động rút gọn và giữ lại các ý quan trọng nhất chỉ trong vài giây.
+      </p>
+      <div class="d-flex gap-3 justify-content-center">
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg px-4">
+          <i class="bi bi-rocket-takeoff me-2"></i>Bắt đầu miễn phí
+        </a>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary btn-lg px-4">
+          Đăng nhập
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<div class="row g-4 mb-5">
+  <div class="col-md-4">
+    <div class="card feature-card h-100 border-0 shadow-sm text-center p-4">
+      <div class="feature-icon mb-3"><i class="bi bi-lightning-charge-fill text-warning" style="font-size:2rem"></i></div>
+      <h5 class="fw-bold">Nhanh chóng</h5>
+      <p class="text-muted small">Xử lý văn bản hàng nghìn từ trong chưa đầy 1 giây nhờ thuật toán TF-IDF tối ưu.</p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card feature-card h-100 border-0 shadow-sm text-center p-4">
+      <div class="feature-icon mb-3"><i class="bi bi-translate text-primary" style="font-size:2rem"></i></div>
+      <h5 class="fw-bold">Tiếng Việt</h5>
+      <p class="text-muted small">Tích hợp thư viện NLP chuyên biệt cho tiếng Việt, xử lý đúng đặc trưng ngôn ngữ.</p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card feature-card h-100 border-0 shadow-sm text-center p-4">
+      <div class="feature-icon mb-3"><i class="bi bi-sliders text-success" style="font-size:2rem"></i></div>
+      <h5 class="fw-bold">Tùy chỉnh linh hoạt</h5>
+      <p class="text-muted small">Chọn tỷ lệ tóm tắt từ 10% đến 50% theo nhu cầu của bạn.</p>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="card border-0 shadow-sm p-5 mb-5 bg-light-subtle">
+  <h3 class="fw-bold text-center mb-4">Cách hoạt động</h3>
+  <div class="row g-3 text-center">
+    <div class="col-md-3">
+      <div class="step-number">1</div>
+      <p class="mt-2 small fw-semibold">Nhập hoặc tải lên văn bản</p>
+    </div>
+    <div class="col-md-1 d-flex align-items-center justify-content-center">
+      <i class="bi bi-arrow-right text-muted d-none d-md-block" style="font-size:1.5rem"></i>
+    </div>
+    <div class="col-md-3">
+      <div class="step-number">2</div>
+      <p class="mt-2 small fw-semibold">Chọn tỷ lệ tóm tắt</p>
+    </div>
+    <div class="col-md-1 d-flex align-items-center justify-content-center">
+      <i class="bi bi-arrow-right text-muted d-none d-md-block" style="font-size:1.5rem"></i>
+    </div>
+    <div class="col-md-4">
+      <div class="step-number">3</div>
+      <p class="mt-2 small fw-semibold">Nhận bản tóm tắt ngay lập tức</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

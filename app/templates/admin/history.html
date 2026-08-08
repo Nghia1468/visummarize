@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Admin – Lịch sử{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-warning"></i>Lịch sử toàn hệ thống</h4>
+  <span class="badge bg-secondary ms-2">{{ summaries|length }}</span>
+  <a href="{{ url_for('admin.dashboard') }}" class="btn btn-sm btn-outline-secondary ms-auto">
+    <i class="bi bi-arrow-left me-1"></i>Quay lại
+  </a>
+</div>
+
+<div class="mb-3">
+  <input type="text" id="searchInput" class="form-control"
+         placeholder="🔍 Tìm kiếm theo tên người dùng, nội dung…" oninput="filterTable()">
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0" id="histTable">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">#</th>
+            <th>Người dùng</th>
+            <th>Văn bản gốc</th>
+            <th>Phương pháp</th>
+            <th>Nén</th>
+            <th>Thời gian xử lý</th>
+            <th>Ngày tóm tắt</th>
+            <th class="text-end pe-3">Xóa</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in summaries %}
+          <tr id="hrow-{{ s.id }}">
+            <td class="ps-3 text-muted">{{ loop.index }}</td>
+            <td>
+              <span class="fw-semibold">{{ s.user.full_name or s.user.username }}</span><br>
+              <small class="text-muted">{{ s.user.email }}</small>
+            </td>
+            <td style="max-width:200px">
+              <span class="text-truncate d-block" title="{{ s.original_text[:200] }}">
+                {{ s.original_text[:70] }}…
+              </span>
+            </td>
+            <td><span class="badge bg-info-subtle text-info text-uppercase">{{ s.method }}</span></td>
+            <td>
+              <span class="badge bg-success-subtle text-success">
+                -{{ ((1 - s.summary_length/s.original_length)*100)|round(0)|int }}%
+              </span>
+            </td>
+            <td class="text-muted small">{{ s.processing_time or '–' }}s</td>
+            <td class="text-muted small">{{ s.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td class="text-end pe-3">
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteSummary({{ s.id }})">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  document.querySelectorAll('#histTable tbody tr').forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+async function deleteSummary(sid) {
+  if (!confirm('Xóa bản ghi này?')) return;
+  const res = await fetch(`/admin/api/history/${sid}`, { method: 'DELETE' });
+  if (res.ok) {
+    document.getElementById(`hrow-${sid}`).remove();
+  } else {
+    alert('Có lỗi xảy ra.');
+  }
+}
+</script>
+{% endblock %}

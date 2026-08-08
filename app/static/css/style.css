@@ -1,0 +1,220 @@
+/* ===== VARIABLES ===== */
+:root {
+  --primary: #0d6efd;
+  --primary-light: #e8f0fe;
+  --success: #198754;
+  --radius: 12px;
+  --shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+
+/* ===== BASE ===== */
+body {
+  background-color: #f8f9fb;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #212529;
+}
+
+main.container {
+  min-height: calc(100vh - 140px);
+}
+
+/* ===== NAVBAR ===== */
+.navbar {
+  padding: 0.6rem 0;
+}
+
+.navbar-brand {
+  font-size: 1.2rem;
+  letter-spacing: -0.3px;
+}
+
+/* ===== AVATAR ===== */
+.avatar-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.avatar-circle.avatar-lg {
+  width: 64px;
+  height: 64px;
+  font-size: 1.6rem;
+}
+
+.avatar-circle.avatar-sm {
+  width: 28px;
+  height: 28px;
+  font-size: 0.75rem;
+}
+
+/* ===== CARDS ===== */
+.card {
+  border-radius: var(--radius) !important;
+}
+
+.card-header {
+  border-radius: var(--radius) var(--radius) 0 0 !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+}
+
+/* ===== STAT CARD ===== */
+.stat-card {
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.10) !important;
+}
+
+.stat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+/* ===== FEATURE CARD (landing) ===== */
+.feature-card {
+  border-radius: var(--radius) !important;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0,0,0,.12) !important;
+}
+
+/* ===== HERO ===== */
+.hero-section {
+  background: linear-gradient(135deg, #f0f4ff 0%, #fafafa 100%);
+  border-radius: 20px;
+  padding: 3.5rem 2rem;
+}
+
+.step-number {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+/* ===== SUMMARIZE PAGE ===== */
+.resize-none {
+  resize: none;
+}
+
+.summary-output {
+  background: #f8fff9;
+  border: 1px solid #c3e6cb !important;
+  line-height: 1.85;
+  white-space: pre-wrap;
+}
+
+/* ===== STATS BAR ===== */
+.result-stat {
+  text-align: center;
+  padding: 0.6rem;
+  border-radius: 10px;
+  background: #f8f9fa;
+}
+
+.result-stat .stat-val {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.result-stat .stat-label {
+  font-size: 0.72rem;
+  color: #888;
+  margin-top: 2px;
+}
+
+/* ===== ADMIN LINK CARD ===== */
+.admin-link-card {
+  transition: transform .15s, box-shadow .15s;
+  color: inherit;
+}
+
+.admin-link-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.10) !important;
+  color: var(--primary);
+}
+
+/* ===== FOOTER ===== */
+.footer-bar {
+  border-top: 1px solid #e9ecef;
+  background: #fff;
+}
+
+/* ===== TABLE ===== */
+.table > :not(caption) > * > * {
+  vertical-align: middle;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  border-radius: 8px;
+}
+
+/* ===== FORM CONTROLS ===== */
+.form-control, .input-group-text {
+  border-radius: 8px !important;
+}
+
+.input-group .form-control {
+  border-radius: 0 8px 8px 0 !important;
+}
+
+.input-group .input-group-text {
+  border-radius: 8px 0 0 8px !important;
+}
+
+.input-group .btn {
+  border-radius: 0 8px 8px 0 !important;
+}
+
+/* ===== TOAST ===== */
+#copyToast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+}
+
+/* ===== SPINNER OVERLAY ===== */
+.spinner-border {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 2rem 1rem;
+  }
+  .display-5 {
+    font-size: 1.6rem;
+  }
+}

@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Admin – Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-shield-lock me-2 text-danger"></i>Bảng điều khiển Admin</h4>
+</div>
+
+<!-- STATS -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-4">
+    <div class="card border-0 shadow-sm stat-card">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="stat-icon bg-primary-subtle text-primary"><i class="bi bi-people-fill"></i></div>
+        <div>
+          <div class="fs-3 fw-bold">{{ total_users }}</div>
+          <div class="text-muted small">Người dùng</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="card border-0 shadow-sm stat-card">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="stat-icon bg-success-subtle text-success"><i class="bi bi-person-check-fill"></i></div>
+        <div>
+          <div class="fs-3 fw-bold">{{ active_users }}</div>
+          <div class="text-muted small">Đang hoạt động</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="card border-0 shadow-sm stat-card">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="stat-icon bg-warning-subtle text-warning"><i class="bi bi-file-text-fill"></i></div>
+        <div>
+          <div class="fs-3 fw-bold">{{ total_summaries }}</div>
+          <div class="text-muted small">Tổng lần tóm tắt</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHART -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white py-3">
+    <h6 class="fw-bold mb-0"><i class="bi bi-bar-chart-fill me-2 text-primary"></i>Lượt tóm tắt 7 ngày gần nhất</h6>
+  </div>
+  <div class="card-body">
+    <canvas id="statsChart" height="100"></canvas>
+  </div>
+</div>
+
+<!-- QUICK LINKS -->
+<div class="row g-3">
+  <div class="col-md-6">
+    <a href="{{ url_for('admin.users') }}" class="card border-0 shadow-sm text-decoration-none h-100 admin-link-card">
+      <div class="card-body d-flex align-items-center gap-3 p-4">
+        <div class="stat-icon bg-primary-subtle text-primary"><i class="bi bi-people"></i></div>
+        <div>
+          <div class="fw-bold">Quản lý người dùng</div>
+          <small class="text-muted">Xem, khóa/mở khóa tài khoản</small>
+        </div>
+        <i class="bi bi-chevron-right ms-auto text-muted"></i>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-6">
+    <a href="{{ url_for('admin.history') }}" class="card border-0 shadow-sm text-decoration-none h-100 admin-link-card">
+      <div class="card-body d-flex align-items-center gap-3 p-4">
+        <div class="stat-icon bg-warning-subtle text-warning"><i class="bi bi-clock-history"></i></div>
+        <div>
+          <div class="fw-bold">Lịch sử hệ thống</div>
+          <small class="text-muted">Toàn bộ lịch sử tóm tắt</small>
+        </div>
+        <i class="bi bi-chevron-right ms-auto text-muted"></i>
+      </div>
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+const labels = {{ stats | map(attribute='date') | list | tojson }};
+const data   = {{ stats | map(attribute='count') | list | tojson }};
+
+new Chart(document.getElementById('statsChart'), {
+  type: 'bar',
+  data: {
+    labels,
+    datasets: [{
+      label: 'Lượt tóm tắt',
+      data,
+      backgroundColor: 'rgba(13,110,253,0.2)',
+      borderColor: 'rgba(13,110,253,1)',
+      borderWidth: 2,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Đăng ký{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="card shadow-sm border-0 mt-3">
+      <div class="card-body p-4">
+        <div class="text-center mb-4">
+          <i class="bi bi-person-plus-fill text-primary" style="font-size:2.5rem"></i>
+          <h4 class="fw-bold mt-2">Tạo tài khoản</h4>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.register') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Họ và tên</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person"></i></span>
+              <input type="text" name="full_name" class="form-control"
+                     value="{{ full_name or '' }}" placeholder="Nguyễn Văn A">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Tên đăng nhập <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-at"></i></span>
+              <input type="text" name="username" class="form-control"
+                     value="{{ username or '' }}" placeholder="username" required minlength="3">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+              <input type="email" name="email" class="form-control"
+                     value="{{ email or '' }}" placeholder="example@email.com" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Mật khẩu <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input type="password" name="password" id="pw1" class="form-control"
+                     placeholder="Ít nhất 6 ký tự" required minlength="6">
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+              <input type="password" name="confirm_password" id="pw2" class="form-control"
+                     placeholder="Nhập lại mật khẩu" required>
+            </div>
+            <div id="pwMatch" class="form-text"></div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 py-2">
+            <i class="bi bi-check-circle me-2"></i>Tạo tài khoản
+          </button>
+        </form>
+
+        <hr class="my-3">
+        <p class="text-center text-muted small mb-0">
+          Đã có tài khoản?
+          <a href="{{ url_for('auth.login') }}" class="fw-semibold">Đăng nhập</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('pw2').addEventListener('input', function () {
+  const match = document.getElementById('pwMatch');
+  if (this.value === document.getElementById('pw1').value) {
+    match.innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> Mật khẩu khớp</span>';
+  } else {
+    match.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Mật khẩu không khớp</span>';
+  }
+});
+</script>
+{% endblock %}
