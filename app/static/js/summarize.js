@@ -19,6 +19,7 @@ document.getElementById('fileUpload').addEventListener('change', async function 
     const res = await fetch('/api/upload', { method: 'POST', body: formData });
     const data = await res.json();
     if (res.ok) {
+      backToEdit();
       document.getElementById('inputText').value = data.text;
       document.getElementById('charCount').textContent = data.text.length + ' ký tự';
       document.getElementById('uploadFilename').textContent = '📄 ' + data.filename;
@@ -33,6 +34,7 @@ document.getElementById('fileUpload').addEventListener('change', async function 
 
 // Xóa input
 function clearInput() {
+  backToEdit();
   document.getElementById('inputText').value = '';
   document.getElementById('charCount').textContent = '0 ký tự';
   document.getElementById('uploadFilename').textContent = '';
@@ -71,12 +73,48 @@ async function doSummarize() {
     currentSummary = data.summary;
     currentSummaryId = data.summary_id;
     showResult(data);
+    buildHighlightView(data.sentences, data.selected_indices);
 
   } catch {
     showAlert('Không thể kết nối máy chủ.', 'danger');
   }
 
   setLoading(false);
+}
+
+// Escape HTML để tránh lỗi hiển thị/XSS khi chèn câu vào innerHTML
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// Dựng lại đoạn văn bản gốc (đã chuẩn hóa) với các câu được chọn vào bản
+// tóm tắt được tô sáng, hiển thị thay cho ô nhập liệu.
+function buildHighlightView(sentences, selectedIndices) {
+  if (!sentences || !sentences.length) return;
+
+  const selectedSet = new Set(selectedIndices || []);
+  const html = sentences.map((s, i) => {
+    const safe = escapeHtml(s);
+    return selectedSet.has(i)
+      ? `<mark style="background:#fff3a0;padding:0 2px;border-radius:3px;">${safe}</mark>`
+      : safe;
+  }).join(' ');
+
+  const view = document.getElementById('inputHighlightView');
+  view.innerHTML = html;
+  view.classList.remove('d-none');
+  document.getElementById('inputText').classList.add('d-none');
+  document.getElementById('btnEditBack').classList.remove('d-none');
+}
+
+// Quay lại chế độ chỉnh sửa (ẩn view highlight, hiện lại textarea)
+function backToEdit() {
+  document.getElementById('inputHighlightView').classList.add('d-none');
+  document.getElementById('inputHighlightView').innerHTML = '';
+  document.getElementById('inputText').classList.remove('d-none');
+  document.getElementById('btnEditBack').classList.add('d-none');
 }
 
 function showResult(data) {
@@ -132,6 +170,15 @@ function showResult(data) {
 
   // Summary text
   document.getElementById('summaryText').textContent = data.summary;
+
+  // Khối đánh giá ROUGE: hiện lại từ đầu (chưa đánh giá) cho lượt tóm tắt mới
+  document.getElementById('rougeSection').classList.remove('d-none');
+  document.getElementById('referenceText').value = '';
+  document.getElementById('rougeResult').classList.add('d-none');
+  const rougeCollapseEl = document.getElementById('rougeCollapse');
+  if (rougeCollapseEl.classList.contains('show')) {
+    bootstrap.Collapse.getOrCreateInstance(rougeCollapseEl).hide();
+  }
 }
 
 function resetOutput() {
@@ -140,6 +187,7 @@ function resetOutput() {
   document.getElementById('resultContainer').classList.add('d-none');
   document.getElementById('resultActions').style.display = 'none';
   document.getElementById('keywordsBar').classList.add('d-none');
+  document.getElementById('rougeSection').classList.add('d-none');
   currentSummary = '';
   currentSummaryId = null;
 }
@@ -170,6 +218,48 @@ function copyResult() {
 function downloadResult() {
   if (!currentSummaryId) return;
   window.location.href = `/api/history/download/${currentSummaryId}`;
+}
+
+async function doEvaluateRouge() {
+  if (!currentSummaryId) {
+    showAlert('Chưa có bản tóm tắt nào để đánh giá.', 'warning');
+    return;
+  }
+  const reference = document.getElementById('referenceText').value.trim();
+  if (reference.length < 20) {
+    showAlert('Bản tóm tắt tham chiếu quá ngắn (tối thiểu 20 ký tự).', 'warning');
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/evaluate/${currentSummaryId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reference })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      showAlert(data.error || 'Không thể đánh giá.', 'danger');
+      return;
+    }
+
+    const s = data.rouge_scores;
+    const pct = v => (v * 100).toFixed(1) + '%';
+    document.getElementById('r1p').textContent = pct(s.rouge1.precision);
+    document.getElementById('r1r').textContent = pct(s.rouge1.recall);
+    document.getElementById('r1f').textContent = pct(s.rouge1.f1);
+    document.getElementById('r2p').textContent = pct(s.rouge2.precision);
+    document.getElementById('r2r').textContent = pct(s.rouge2.recall);
+    document.getElementById('r2f').textContent = pct(s.rouge2.f1);
+    document.getElementById('rlp').textContent = pct(s.rougeL.precision);
+    document.getElementById('rlr').textContent = pct(s.rougeL.recall);
+    document.getElementById('rlf').textContent = pct(s.rougeL.f1);
+    document.getElementById('rougeResult').classList.remove('d-none');
+
+  } catch {
+    showAlert('Không thể kết nối máy chủ.', 'danger');
+  }
 }
 
 // Toast thông báo nhỏ

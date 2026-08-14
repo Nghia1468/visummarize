@@ -1,5 +1,6 @@
 from app import db
 from datetime import datetime
+import json
 
 
 class Summary(db.Model):
@@ -15,6 +16,8 @@ class Summary(db.Model):
     summary_length = db.Column(db.Integer, nullable=False)
     processing_time = db.Column(db.Float, nullable=True)
     keywords = db.Column(db.String(500), nullable=True)  # lưu dạng "từ1, từ2, ..."
+    reference_summary = db.Column(db.Text, nullable=True)  # bản tóm tắt tham chiếu do người dùng nhập để đánh giá ROUGE
+    rouge_scores = db.Column(db.Text, nullable=True)  # JSON: {"rouge1": {...}, "rouge2": {...}, "rougeL": {...}}
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
@@ -25,6 +28,8 @@ class Summary(db.Model):
             'method': self.method,
             'ratio': self.ratio,
             'keywords': [k.strip() for k in self.keywords.split(',')] if self.keywords else [],
+            'reference_summary': self.reference_summary,
+            'rouge_scores': json.loads(self.rouge_scores) if self.rouge_scores else None,
             'original_length': self.original_length,
             'summary_length': self.summary_length,
             'processing_time': self.processing_time,

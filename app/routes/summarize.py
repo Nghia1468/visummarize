@@ -2,9 +2,11 @@ from flask import Blueprint, render_template, request, jsonify, current_app
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 import os
+import json
 from app import db, limiter
 from app.models.summary import Summary
 from app.nlp.nlp_service import summarize, METHODS, DEFAULT_METHOD
+from app.nlp.rouge_evaluator import evaluate_rouge
 
 summarize_bp = Blueprint('summarize', __name__)
 
@@ -76,6 +78,8 @@ def api_summarize():
         'selected_count': result['selected_count'],
         'processing_time': result['processing_time'],
         'summary_id': record.id,
+        'sentences': result['sentences'],
+        'selected_indices': result['selected_indices'],
         'compression': round((1 - result['summary_length'] / result['original_length']) * 100, 1)
     })
 
@@ -108,3 +112,29 @@ def api_upload():
         return jsonify({'error': 'File trống.'}), 400
 
     return jsonify({'text': content, 'filename': secure_filename(file.filename)})
+
+
+@summarize_bp.route('/api/evaluate/<int:sid>', methods=['POST'])
+@login_required
+@limiter.limit('20 per minute')
+def api_evaluate(sid):
+    """Đánh giá 1 bản tóm tắt đã lưu bằng ROUGE, so với bản tham chiếu
+    do người dùng tự nhập (thường là bản tóm tắt do con người viết)."""
+    record = Summary.query.filter_by(id=sid, user_id=current_user.id).first_or_404()
+
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Dữ liệu không hợp lệ.'}), 400
+
+    reference = data.get('reference', '').strip()
+    if len(reference) < 20:
+        return jsonify({'error': 'Bản tóm tắt tham chiếu quá ngắn (tối thiểu 20 ký tự).'}), 400
+
+    scores = evaluate_rouge(record.summary_text, reference)
+
+    # Lưu lại để xem trong lịch sử mà không cần đánh giá lại
+    record.reference_summary = reference
+    record.rouge_scores = json.dumps(scores, ensure_ascii=False)
+    db.session.commit()
+
+    return jsonify({'rouge_scores': scores, 'summary_id': record.id})

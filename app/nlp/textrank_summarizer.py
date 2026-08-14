@@ -21,16 +21,23 @@ from app.nlp.vectorizer import build_tfidf_matrix, sentence_similarity_matrix
 
 
 def textrank_summarize(sentences: list[str], ratio: float = 0.3,
-                        use_mmr: bool = True, diversity: float = 0.7) -> list[str]:
+                        use_mmr: bool = True, diversity: float = 0.7):
+    """
+    Returns:
+        (selected_sentences, selected_indices) — selected_indices là chỉ số
+        (0-based) của các câu được chọn trong danh sách `sentences` gốc,
+        theo đúng thứ tự xuất hiện. Dùng để tô sáng câu được chọn trên UI.
+    """
     if len(sentences) == 0:
-        return []
+        return [], []
 
     n_select = max(1, round(len(sentences) * ratio))
     n_select = min(n_select, len(sentences))
 
     vectorizer, tfidf_matrix, _ = build_tfidf_matrix(sentences)
     if tfidf_matrix is None:
-        return sentences[:n_select]
+        indices = list(range(n_select))
+        return sentences[:n_select], indices
 
     sim_matrix = sentence_similarity_matrix(tfidf_matrix)
     # Bỏ trọng số tự-liên-kết (câu với chính nó) để không làm lệch PageRank
@@ -54,4 +61,4 @@ def textrank_summarize(sentences: list[str], ratio: float = 0.3,
         top_indices = list(np.argsort(scores)[::-1][:n_select])
 
     top_indices = sorted(top_indices)
-    return [sentences[i] for i in top_indices]
+    return [sentences[i] for i in top_indices], top_indices

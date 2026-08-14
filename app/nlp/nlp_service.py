@@ -59,7 +59,7 @@ def summarize(text: str, method: str = DEFAULT_METHOD, ratio: float = 0.3,
         return {'error': f'Văn bản cần có ít nhất {MIN_SENTENCES} câu để tóm tắt.'}
 
     # Bước 3: Tóm tắt bằng phương pháp đã chọn (có MMR để giảm trùng lặp)
-    selected = summarize_fn(sentences, ratio, use_mmr=use_mmr)
+    selected, selected_indices = summarize_fn(sentences, ratio, use_mmr=use_mmr)
 
     if not selected:
         return {'error': 'Không thể tạo bản tóm tắt. Vui lòng thử lại với văn bản khác.'}
@@ -80,5 +80,9 @@ def summarize(text: str, method: str = DEFAULT_METHOD, ratio: float = 0.3,
         'sentence_count': len(sentences),
         'selected_count': len(selected),
         'processing_time': elapsed,
+        # Dùng để tô sáng câu được chọn trên UI: danh sách toàn bộ câu (đã
+        # chuẩn hóa) và chỉ số các câu lọt vào bản tóm tắt.
+        'sentences': sentences,
+        'selected_indices': selected_indices,
         'error': None
     }
